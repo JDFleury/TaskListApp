@@ -39,7 +39,7 @@ export default function App() {
   useEffect(() => {
     if (ralewayLoaded && !isLoggedIn) {
       setTimeout(() => {
-        console.log('Test');
+        console.log('User Exists, Log Them In');
       }, 3000);
     }
   }, [ralewayLoaded]);
