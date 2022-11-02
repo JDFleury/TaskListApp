@@ -1,8 +1,11 @@
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useContext, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 import styled from 'styled-components';
 import { SafeArea } from '../../components/safeArea/safeArea.component';
+import { auth } from '../../firebase/firebase';
+import { loginWithEmail } from '../../services/firebaseUtils/login.firebase';
 import { UserContext } from '../../services/userContext/user.context';
 import { colors } from '../../theme/colors';
 
@@ -15,15 +18,23 @@ const LoginEmailInput = styled(TextInput)`
   margin-top: ${(props) => props.theme.size[6]};
   margin-bottom: ${(props) => props.theme.size[2]};
 `;
-const LoginPasswordInput = styled(TextInput)``;
+const LoginPasswordInput = styled(TextInput)`
+  margin-bottom: ${(props) => props.theme.size[4]};
+`;
+const LoginButton = styled(Button)`
+  width: ${(props) => props.theme.size[7]};
+  margin-left: auto;
+  margin-right: auto;
+  background-color: ${(props) => props.theme.colors.primaryBlue};
+`;
 
 // eslint-disable-next-line react/prop-types
 export const LoginScreen = ({ setIsLoggedIn }) => {
-  const { userUid, setUserUid } = useContext(UserContext);
   const [loginEmail, setLoginEmail] = useState('');
   const [emailInvalid, setEmailInvalid] = useState(false);
   const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loggingIn, setLoggingIn] = useState(false);
 
   const onLoginEmailChange = (email) => {
     if (
@@ -38,6 +49,31 @@ export const LoginScreen = ({ setIsLoggedIn }) => {
       setEmailInvalid(true);
     }
     setLoginEmail(email);
+  };
+
+  const loginClick = async () => {
+    if (
+      loginEmail !== '' &&
+      loginPassword !== '' &&
+      !emailInvalid &&
+      !loggingIn
+    ) {
+      console.log('test');
+      setLoggingIn(true);
+      await signInWithEmailAndPassword(auth, loginEmail, loginPassword)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log(user);
+          setLoggingIn(false);
+          setIsLoggedIn(true);
+        })
+        .catch((error) => {
+          console.log(error);
+          setLoggingIn(false);
+        });
+    } else {
+      console.log('Fill in all fields');
+    }
   };
 
   return (
@@ -74,6 +110,9 @@ export const LoginScreen = ({ setIsLoggedIn }) => {
           outlineColor={colors.primaryBlue}
           activeOutlineColor={colors.primaryBlue}
         />
+        <LoginButton mode="contained" onPress={loginClick} loading={loggingIn}>
+          Login
+        </LoginButton>
       </LoginContainer>
     </SafeArea>
   );
