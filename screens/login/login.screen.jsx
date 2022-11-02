@@ -1,12 +1,13 @@
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import React, { useContext, useState } from 'react';
-import { View } from 'react-native';
-import { Button, TextInput } from 'react-native-paper';
+import { View, Text } from 'react-native';
+import { Button, TextInput, Checkbox } from 'react-native-paper';
 import styled from 'styled-components';
 import { SafeArea } from '../../components/safeArea/safeArea.component';
 import { auth } from '../../firebase/firebase';
-import { loginWithEmail } from '../../services/firebaseUtils/login.firebase';
 import { UserContext } from '../../services/userContext/user.context';
+import * as SecureStore from 'expo-secure-store';
+import { addMonths } from 'date-fns';
 import { colors } from '../../theme/colors';
 
 const LoginContainer = styled(View)`
@@ -14,26 +15,38 @@ const LoginContainer = styled(View)`
   padding: ${(props) => props.theme.size[3]};
 `;
 
+const Row = styled(View)`
+  flex-direction: row;
+  align-items: center;
+`;
+
 const LoginEmailInput = styled(TextInput)`
   margin-top: ${(props) => props.theme.size[6]};
   margin-bottom: ${(props) => props.theme.size[2]};
 `;
 const LoginPasswordInput = styled(TextInput)`
-  margin-bottom: ${(props) => props.theme.size[4]};
+  margin-bottom: ${(props) => props.theme.size[2]};
 `;
 const LoginButton = styled(Button)`
   width: ${(props) => props.theme.size[7]};
+  margin-top: ${(props) => props.theme.size[4]}
   margin-left: auto;
   margin-right: auto;
   background-color: ${(props) => props.theme.colors.primaryBlue};
 `;
 
+const StayLoggedInText = styled(Text)`
+  font-size: ${(props) => props.theme.fontSizes.body};
+  font-family: ${(props) => props.theme.fonts.main};
+`;
+
 // eslint-disable-next-line react/prop-types
-export const LoginScreen = ({ setIsLoggedIn }) => {
+export const LoginScreen = ({ setIsLoggedIn, infoLoading }) => {
   const [loginEmail, setLoginEmail] = useState('');
   const [emailInvalid, setEmailInvalid] = useState(false);
   const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [stayLoggedIn, setStayLoggedIn] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
 
   const onLoginEmailChange = (email) => {
@@ -51,6 +64,17 @@ export const LoginScreen = ({ setIsLoggedIn }) => {
     setLoginEmail(email);
   };
 
+  //Saving to Secure Store
+  const secureSave = async (key, value) => {
+    await SecureStore.setItemAsync(key, value)
+      .then(() => {
+        console.log('Store Saved');
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   const loginClick = async () => {
     if (
       loginEmail !== '' &&
@@ -58,12 +82,17 @@ export const LoginScreen = ({ setIsLoggedIn }) => {
       !emailInvalid &&
       !loggingIn
     ) {
-      console.log('test');
       setLoggingIn(true);
       await signInWithEmailAndPassword(auth, loginEmail, loginPassword)
-        .then((userCredential) => {
+        .then(async (userCredential) => {
           const user = userCredential.user;
-          console.log(user);
+          let expirationDate = new Date().toString();
+          if (stayLoggedIn) {
+            const newExpiration = addMonths(new Date(), 1);
+            expirationDate = newExpiration.toString();
+          }
+          await secureSave('userUid', user.uid);
+          await secureSave('expiration', expirationDate);
           setLoggingIn(false);
           setIsLoggedIn(true);
         })
@@ -110,7 +139,21 @@ export const LoginScreen = ({ setIsLoggedIn }) => {
           outlineColor={colors.primaryBlue}
           activeOutlineColor={colors.primaryBlue}
         />
-        <LoginButton mode="contained" onPress={loginClick} loading={loggingIn}>
+        <Row>
+          <Checkbox
+            color={colors.primaryBlue}
+            uncheckedColor={colors.primaryBlue}
+            status={stayLoggedIn ? 'checked' : 'unchecked'}
+            onPress={() => setStayLoggedIn(!stayLoggedIn)}
+          />
+          <StayLoggedInText>Stay Logged In</StayLoggedInText>
+        </Row>
+
+        <LoginButton
+          mode="contained"
+          onPress={loginClick}
+          loading={loggingIn || infoLoading}
+        >
           Login
         </LoginButton>
       </LoginContainer>

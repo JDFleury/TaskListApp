@@ -12,7 +12,9 @@ import { HomeScreen } from './screens/home/home.screen';
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
-import { ProfileScreen } from './screens/profile/profile.sceen';
+import { ProfileScreen } from './screens/profile/profile.screen';
+import { isAfter } from 'date-fns';
+import * as SecureStore from 'expo-secure-store';
 
 const TAB_ICON = {
   Home: 'home-outline',
@@ -33,14 +35,43 @@ const createScreenOptions = ({ route }) => {
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [infoLoading, setInfoLoading] = useState(false);
   const [ralewayLoaded] = useRaleway({
     Raleway_400Regular,
   });
   useEffect(() => {
+    //Function To Grab Secure Data
+    const getSecureValue = async (key) => {
+      let result = await SecureStore.getItemAsync(key);
+      if (result) {
+        return result;
+      } else {
+        console.log('No Value Found');
+        return null;
+      }
+    };
+
     if (ralewayLoaded && !isLoggedIn) {
-      setTimeout(() => {
-        console.log('User Exists, Log Them In');
-      }, 3000);
+      setInfoLoading(true);
+      getSecureValue('userUid').then((uid) => {
+        if (uid !== null) {
+          getSecureValue('expiration').then((expiration) => {
+            if (expiration !== null) {
+              if (isAfter(new Date(expiration), new Date())) {
+                console.log('Session Active');
+                setInfoLoading(false);
+                setIsLoggedIn(true);
+              } else {
+                console.log('Session Expired');
+                setInfoLoading(false);
+              }
+            }
+          });
+        } else {
+          setInfoLoading(false);
+        }
+      });
+      setInfoLoading(false);
     }
   }, [ralewayLoaded]);
 
@@ -61,7 +92,10 @@ export default function App() {
               </Tab.Navigator>
             </NavigationContainer>
           ) : (
-            <LoginScreen setIsLoggedIn={setIsLoggedIn} />
+            <LoginScreen
+              setIsLoggedIn={setIsLoggedIn}
+              infoLoading={infoLoading}
+            />
           )}
         </UserContextProvider>
       </ThemeProvider>
