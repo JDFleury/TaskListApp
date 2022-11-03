@@ -8,7 +8,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "eslint /**/*.{js,jsx}",
-    "prettier": "prettier -w ."
+    "prettier": "prettier -w .",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@expo-google-fonts/raleway": "^0.2.2",
