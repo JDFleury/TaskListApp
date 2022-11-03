@@ -50,7 +50,7 @@ export const LoginScreen = ({ setIsLoggedIn, infoLoading }) => {
   const [loggingIn, setLoggingIn] = useState(false);
 
   const userInfo = useSelector((state) => state.user);
-  console.log(userInfo);
+  // console.log(userInfo);
 
   const onLoginEmailChange = (email) => {
     if (
