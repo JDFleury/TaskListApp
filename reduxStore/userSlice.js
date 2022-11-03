@@ -2,7 +2,8 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
     uid: 'hello World!',
-    expiration: new Date()
+    expiration: new Date(),
+    isLoggedIn: false
 }
 
 export const userSlice = createSlice({
@@ -14,9 +15,12 @@ export const userSlice = createSlice({
         },
         setExpiration: (state, action) => {
             state.expiration = action.payload
+        },
+        setIsLoggedIn: (state, action) => {
+            state.isLoggedIn = action.payload
         }
     }
 });
 
-export const { setUid, setExpiration } = userSlice.actions;
+export const { setUid, setExpiration, setIsLoggedIn } = userSlice.actions;
 export default userSlice.reducer;

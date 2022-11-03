@@ -8,7 +8,12 @@ import { auth } from '../../firebase/firebase';
 import * as SecureStore from 'expo-secure-store';
 import { addMonths } from 'date-fns';
 import { colors } from '../../theme/colors';
-import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import {
+  setExpiration,
+  setIsLoggedIn,
+  setUid,
+} from '../../reduxStore/userSlice';
 
 const LoginContainer = styled(View)`
   flex: 1;
@@ -41,16 +46,14 @@ const StayLoggedInText = styled(Text)`
 `;
 
 // eslint-disable-next-line react/prop-types
-export const LoginScreen = ({ setIsLoggedIn, infoLoading }) => {
+export const LoginScreen = ({ infoLoading }) => {
+  const dispatch = useDispatch();
   const [loginEmail, setLoginEmail] = useState('');
   const [emailInvalid, setEmailInvalid] = useState(false);
   const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [stayLoggedIn, setStayLoggedIn] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
-
-  const userInfo = useSelector((state) => state.user);
-  // console.log(userInfo);
 
   const onLoginEmailChange = (email) => {
     if (
@@ -97,7 +100,9 @@ export const LoginScreen = ({ setIsLoggedIn, infoLoading }) => {
           await secureSave('userUid', user.uid);
           await secureSave('expiration', expirationDate);
           setLoggingIn(false);
-          setIsLoggedIn(true);
+          dispatch(setUid(user.uid));
+          dispatch(setExpiration(expirationDate));
+          dispatch(setIsLoggedIn(true));
         })
         .catch((error) => {
           console.log(error);
