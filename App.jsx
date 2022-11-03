@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { theme } from './theme';
 import {
@@ -11,7 +11,6 @@ import { store } from './reduxStore/store';
 import { MainContainer } from './components/mainContainer/mainContainer.component';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [ralewayLoaded] = useRaleway({
     Raleway_400Regular,
   });
