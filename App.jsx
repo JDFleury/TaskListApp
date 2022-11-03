@@ -6,7 +6,8 @@ import {
   Raleway_400Regular,
 } from '@expo-google-fonts/raleway';
 import { ThemeProvider } from 'styled-components';
-import { UserContextProvider } from './services/userContext/user.context';
+import { Provider } from 'react-redux';
+import { store } from './reduxStore/store';
 import { LoginScreen } from './screens/login/login.screen';
 import { HomeScreen } from './screens/home/home.screen';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,7 +34,7 @@ const createScreenOptions = ({ route }) => {
   };
 };
 
-export default function App() {
+function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [infoLoading, setInfoLoading] = useState(false);
   const [ralewayLoaded] = useRaleway({
@@ -83,7 +84,7 @@ export default function App() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <UserContextProvider>
+        <Provider store={store}>
           {isLoggedIn ? (
             <NavigationContainer>
               <Tab.Navigator screenOptions={createScreenOptions}>
@@ -97,9 +98,11 @@ export default function App() {
               infoLoading={infoLoading}
             />
           )}
-        </UserContextProvider>
+        </Provider>
       </ThemeProvider>
       <StatusBar style="auto" />
     </>
   );
 }
+
+export default App;

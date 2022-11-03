@@ -1,14 +1,14 @@
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text } from 'react-native';
 import { Button, TextInput, Checkbox } from 'react-native-paper';
 import styled from 'styled-components';
 import { SafeArea } from '../../components/safeArea/safeArea.component';
 import { auth } from '../../firebase/firebase';
-import { UserContext } from '../../services/userContext/user.context';
 import * as SecureStore from 'expo-secure-store';
 import { addMonths } from 'date-fns';
 import { colors } from '../../theme/colors';
+import { useSelector } from 'react-redux';
 
 const LoginContainer = styled(View)`
   flex: 1;
@@ -48,6 +48,9 @@ export const LoginScreen = ({ setIsLoggedIn, infoLoading }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [stayLoggedIn, setStayLoggedIn] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
+
+  const userInfo = useSelector((state) => state.user);
+  console.log(userInfo);
 
   const onLoginEmailChange = (email) => {
     if (
