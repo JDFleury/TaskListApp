@@ -2,8 +2,6 @@ import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import logger from "redux-logger";
 import user from './userSlice';
 
-
-
 const combinedReducer = combineReducers({
     user
 });
